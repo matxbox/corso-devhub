@@ -8,39 +8,32 @@ const port = 3000
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
 });
 
-async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
+async function moviequery(query) {
+    try {
+        await client.connect()
+        const database = client.db("sample_mflix")
+        const movies = database.collection("movies")
+
+        const movie = await movies.findOne(query)
+
+        return movie
+    } finally {
+        await client.close()
+    }
 }
-run().catch(console.dir);
 
-app.get("/",(req,res) => {
-  res.send("hello world")
-})
-
-app.post("/testpost/:restfulparam",(req,res) => {
-    console.log(req.body)
-    console.log(req.query) // parametri in URL /route?param1=test
-    console.log(req.params) // parametri restful in url /route/provola
-    console.log(req.headers)
-    res.send("hai appena inviato una post")
+app.get("/listMovies", async (req, res) => {
+    const movie = await moviequery(req.query)
+    res.json(movie)
 })
 
 app.listen(port, () => {
-  console.log(`express listening on port ${port}`)
+    console.log("express webserver listening on port: ", port)
 })

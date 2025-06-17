@@ -6,7 +6,9 @@ const express = require("express")
 const app = express()
 const port = 3000
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const jwt = require("jsonwebtoken")
+const bcrypt = require("bcrypt")
+
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
@@ -15,37 +17,41 @@ const client = new MongoClient(uri, {
     }
 });
 
-async function client_connect(action) {
-    return async function () {
-        try {
-            await client.connect()
-            console.log(this)
-            return action.apply(this, arguments)
-        } catch (error) {
-            console.error(error)
-        } finally {
-            await client.close()
-        }
-    }
-}
-
-async function query_movie(query) {
-        const database = client.db("sample_mflix")
-        const movies = database.collection("movies")
-
-        const movie = await movies.findOne(query)
-
-    return movie
-}
-var query_movie_wrap = client_connect(query_movie)
-
-async function add_movie(details) {
-    const database = client.db("sample_mflix")
-}
+app.use(express.json())
 
 app.get("/listMovies", async (req, res) => {
-    const movie = await query_movie_wrap(req.query)
-    res.json(movie)
+    try {
+        await client.connect()
+        const cursor = client.db("sample_mflix").collection("movies").find(req.query)
+        const movies = await cursor.sort({ _id: -1 }).limit(50).toArray()
+        res.status(200).json(movies)
+    } catch (error) {
+        console.error(error)
+        res.status(500).send(error.toString())
+    } finally {
+        await client.close()
+    }
+})
+
+app.post("/addFilm", async (req, res) => {
+    try {
+        required_info = ["title", "director", "year"]
+        if (!required_info.every(key => key in req.body)) {
+            res.status(400).send("Missing minimum required info [title, director, year] to add film")
+        }
+        await client.connect()
+        const result = await client.db("sample_mflix").collection("movies").insertOne(req.body)
+        res.status(201).json({ success: true, film_data: req.body, new_id: result.insertedId })
+    } catch (error) {
+        console.error(error)
+        res.status(500).send(error.toString())
+    } finally {
+        await client.close()
+    }
+})
+
+app.put("/addUser", async (req, res) => {
+
 })
 
 app.listen(port, () => {

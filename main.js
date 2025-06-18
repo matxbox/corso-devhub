@@ -19,6 +19,25 @@ const client = new MongoClient(uri, {
 
 app.use(express.json())
 
+app.use((req, res, next) => {
+    if (["/login", "/addUser"].includes(req.originalUrl)) {
+        return next()
+    }
+    try {
+        const decoded_jwt = jwt.verify(req.headers.authorization.split(" ")[1], env.jwt.secret_key)
+        if (decoded_jwt.user.toLowerCase() === "mattia") {
+            return next()
+        } else {
+            res.status(403).json({ success: false, token: decoded_jwt })
+        }
+
+    } catch (error) {
+
+        console.error(error)
+        res.send(error.toString())
+    }
+})
+
 app.get("/listMovies", async (req, res) => {
     try {
         await client.connect()
@@ -50,8 +69,12 @@ app.post("/addFilm", async (req, res) => {
     }
 })
 
-app.put("/addUser", async (req, res) => {
-
+app.post("/login", async (req, res) => {
+    const { user, password } = req.body
+    if (user.toLowerCase() === "mattia" && password === "viaLe2ManiDalNaso!") {
+        token = jwt.sign({ user: user }, env.jwt.secret_key)
+        res.status(200).send(token)
+    }
 })
 
 app.listen(port, () => {

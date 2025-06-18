@@ -70,10 +70,31 @@ app.post("/addFilm", async (req, res) => {
 })
 
 app.post("/login", async (req, res) => {
-    const { user, password } = req.body
-    if (user.toLowerCase() === "mattia" && password === "viaLe2ManiDalNaso!") {
-        token = jwt.sign({ user: user }, env.jwt.secret_key)
-        res.status(200).send(token)
+    const { username, password } = req.body
+    if (!(username === undefined || password === undefined)) {
+        try {
+            await client.connect()
+            const user_match = await client.db("sample_mflix").collection("users").findOne({ name: username })
+            if (user_match !== null) {
+                const test = await bcrypt.compare(password, "$2b$12$j0jvmji7RgMNbcOkL6H4SuH3EEbJPyNollMurYnU22/Vu.BdxMkxG") // provolona
+                if (test) {
+                    token = jwt.sign({ user: username }, env.jwt.secret_key, { expiresIn: "1h" })
+                    res.status(200).send({ token: token, match: user_match })
+                }
+            } else {
+                res.status(403).send("Wrong username or password")
+            }
+
+        } catch (error) {
+            console.error(error)
+            res.status(500).send(error.toString())
+        } finally {
+            await client.close()
+        }
+
+
+    } else {
+        res.status(400).send("Request does not contain mandatory login information")
     }
 })
 

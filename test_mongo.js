@@ -26,7 +26,7 @@ async function add_movie(new_movie) {
 
 async function query_movie(query) {
 
-    const movies = client.db("sample_mflix").collection("movies")
+    const movies = client.db("sample_mflix").collection("users")
     return movies.find(query)
 }
 
@@ -67,7 +67,7 @@ const dnd_movie = {
     ],
 }
 const query = {
-    _id: new ObjectId("685039540280f571ae7cc7c7")
+    $or: [{ name: "Jon Snow" }, { _id: new ObjectId("573a1398f29313caabce9682") }]
 }
 
 async function test_db() {
@@ -76,10 +76,11 @@ async function test_db() {
         cursor = await query_movie(query)
         console.log(await cursor.project({
             //_id: 0,
-            title: 1,
-            released: 1
+            // title: 1,
+            // released: 1
         }).toArray())
-
+        // const movie = client.db("sample_mflix").collection("movies").findOne(query)
+        // console.log(movie)
     } catch (error) {
         console.error(error)
     } finally {
@@ -87,3 +88,4 @@ async function test_db() {
     }
 }
 
+test_db()

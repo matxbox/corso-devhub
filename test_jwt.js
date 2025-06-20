@@ -29,8 +29,7 @@ app.use((req, res, next) => {
 
 app.post("/generateToken", (req, res) => {
     const payload = {
-        time: Date(),
-        userId: 12
+        user: "mattia"
     }
     const token = jwt.sign(payload, env.jwt.secret_key)
     res.send(token)

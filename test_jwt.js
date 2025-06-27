@@ -14,9 +14,9 @@ app.use((req, res, next) => {
     try {
         const token = req.headers.authorization.split(" ")[1]
 
-        const verified = jwt.verify(token, env.jwt.secret_key)
+        const verified = jwt.verify(token, "test_segreto")
         if (verified) {
-            console.log("token verified")
+            console.log(verified)
             return next()
         } else {
             return res.status(401).send("invalid token")
@@ -31,12 +31,11 @@ app.post("/generateToken", (req, res) => {
     const payload = {
         user: "mattia"
     }
-    const token = jwt.sign(payload, env.jwt.secret_key)
+    const token = jwt.sign(payload, "test_segreto", { expiresIn: "50 s" })
     res.send(token)
 })
 
 app.get("/ciao", (req, res) => {
-    console.log(req.headers.authorization)
     res.status(200).send("ciao")
 })
 

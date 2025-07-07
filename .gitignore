@@ -10,6 +10,7 @@ yarn.lock
 package-lock.json
 
 env.json
-tutorial*
+tutorial_*
+test_*
 DEV_HUB_NODEJS_DOCS-main/
 DEV_HUB_NODEJS_DOCS-main/*

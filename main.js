@@ -36,12 +36,12 @@ app.use(async (req, res, next) => {
             }
         } catch (error) {
             console.error(error)
-            res.status(401).send({ status: "Invalid token", error: error.toString() })
+            res.status(401).json({ success: false, message: error.toString() })
         } finally {
             client.close()
         }
     } else {
-        res.status(401).send("Missing authentication")
+        res.status(401).json({ success: false, message: "Missing authentication" })
     }
 
 })
@@ -56,21 +56,21 @@ app.post("/login", async (req, res) => {
                 const password_match = await bcrypt.compare(password, user_match.password)
                 if (password_match) {
                     const token = jwt.sign({ user_id: user_match._id }, env.jwt.secret_key, { expiresIn: "1h" })
-                    res.status(200).send(token)
+                    res.status(200).json({ success: true, message: "Login successful", data: { token } })
                 } else {
-                    res.status(403).send("Wrong username or password")
+                    res.status(403).json({ success: false, message: "Wrong username or password" })
                 }
             } else {
-                res.status(403).send("Wrong username or password")
+                res.status(403).json({ success: false, message: "Wrong username or password" })
             }
         } catch (error) {
             console.error(error)
-            res.status(500).send(error.toString())
+            res.status(500).json({ success: false, message: error.toString() })
         } finally {
             await client.close()
         }
     } else {
-        res.status(400).send("Request does not contain mandatory login information")
+        res.status(400).json({ success: false, message: "Request does not contain mandatory login information" })
     }
 })
 
@@ -83,17 +83,17 @@ app.put("/addUser", async (req, res) => {
             if (user_match == null) {
                 const pass_crypt = await bcrypt.hash(password, 12)
                 const result = await client.db("sample_mflix").collection("users").insertOne({ name: username, email: email, password: pass_crypt })
-                res.status(201).json({ success: true, user_data: { username, email }, new_id: result.insertedId })
+                res.status(201).json({ success: true, message: "User added", data: { user_data: { username, email }, new_id: result.insertedId } })
             } else {
-                res.status(401).send("user/email already registered")
+                res.status(401).json({ success: false, message: "user/email already registered" })
             }
         } catch (error) {
-            res.status(500).send(error.toString())
+            res.status(500).json({ success: false, message: error.toString() })
         } finally {
             await client.close()
         }
     } else {
-        res.status(400).send("Request does not contain mandatory information: username, password, email")
+        res.status(400).json({ success: false, message: "Request does not contain mandatory information: username, password, email" })
     }
 })
 
@@ -106,10 +106,10 @@ app.get("/listMovies", async (req, res) => {
         }
         const cursor = client.db("sample_mflix").collection("movies").find(query)
         const movies = await cursor.sort({ _id: -1 }).limit(50).toArray()
-        res.status(200).json(movies)
+        res.status(200).json({ success: true, message: "Movies found", data: { movies } })
     } catch (error) {
         console.error(error)
-        res.status(500).send(error.toString())
+        res.status(500).json({ success: false, message: error.toString() })
     } finally {
         await client.close()
     }
@@ -119,14 +119,14 @@ app.post("/addFilm", async (req, res) => {
     try {
         required_info = ["title", "director", "year"]
         if (!required_info.every(key => key in req.body)) {
-            res.status(400).send("Missing minimum required info [title, director, year] to add film")
+            res.status(400).json({ success: false, message: "Missing minimum required info [title, director, year] to add film" })
         }
         await client.connect()
         const result = await client.db("sample_mflix").collection("movies").insertOne(req.body)
-        res.status(201).json({ success: true, film_data: req.body, new_id: result.insertedId })
+        res.status(201).json({ success: true, message: "Movie created", data: { film_data: req.body, new_id: result.insertedId } })
     } catch (error) {
         console.error(error)
-        res.status(500).send(error.toString())
+        res.status(500).json({ success: false, message: error.toString() })
     } finally {
         await client.close()
     }

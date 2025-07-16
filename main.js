@@ -28,7 +28,7 @@ app.use(async (req, res, next) => {
         try {
             await client.connect()
             const decoded_jwt = jwt.verify(req.headers.authorization.split(" ")[1], env.jwt.secret_key)
-            const user_match = await client.db("sample_mflix").collection("users").findOne({ _id: new ObjectId(decoded_jwt.user_id) })
+            const user_match = await client.db("sample_mflix").collection("users").findOne({ _id: ObjectId.createFromHexString(decoded_jwt.user_id) })
             if (user_match != null) {
                 return next()
             } else {

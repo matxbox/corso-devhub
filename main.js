@@ -117,7 +117,7 @@ app.get("/listMovies", async (req, res) => {
 
 app.post("/addFilm", async (req, res) => {
     try {
-        required_info = ["title", "director", "year"]
+        const required_info = ["title", "director", "year"]
         if (!required_info.every(key => key in req.body)) {
             res.status(400).json({ success: false, message: "Missing minimum required info [title, director, year] to add film" })
         }

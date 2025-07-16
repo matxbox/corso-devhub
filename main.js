@@ -1,13 +1,13 @@
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb")
-const env = require("./env.json")
+import { MongoClient, ServerApiVersion, ObjectId } from "mongodb"
+import env from "./env.json" with {type: "json"}
 const uri = `mongodb+srv://${env.mongodb.username}:${env.mongodb.password}@corso-dev-hub.vsmeaox.mongodb.net/?retryWrites=true&w=majority&appName=corso-dev-hub`;
 
-const express = require("express")
+import express from "express"
 const app = express()
 const port = 3000
 
-const jwt = require("jsonwebtoken")
-const bcrypt = require("bcrypt")
+import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 
 const client = new MongoClient(uri, {
     serverApi: {

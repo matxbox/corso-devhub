@@ -1,13 +1,14 @@
 import { MongoClient, ServerApiVersion, ObjectId } from "mongodb"
 import env from "./env.json" with {type: "json"}
-const uri = `mongodb+srv://${env.mongodb.username}:${env.mongodb.password}@corso-dev-hub.vsmeaox.mongodb.net/?retryWrites=true&w=majority&appName=corso-dev-hub`;
-
+import cors from 'cors'
+import bodyParser from "body-parser";
 import express from "express"
-const app = express()
-const port = 3000
-
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
+
+const app = express()
+const port = 3000
+const uri = `mongodb+srv://${env.mongodb.username}:${env.mongodb.password}@corso-dev-hub.vsmeaox.mongodb.net/?retryWrites=true&w=majority&appName=corso-dev-hub`;
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -18,6 +19,8 @@ const client = new MongoClient(uri, {
 });
 
 app.use(express.json())
+app.use(bodyParser.json())
+app.use(cors())
 
 app.use(async (req, res, next) => {
     if (["/login", "/addUser"].includes(req.originalUrl)) {
@@ -55,8 +58,8 @@ app.post("/login", async (req, res) => {
             if (user_match != null) {
                 const password_match = await bcrypt.compare(password, user_match.password)
                 if (password_match) {
-                    token_content = { username: user_match.name, email: user_match.email }
-                    const token = jwt.sign(user_match, env.jwt.secret_key, { expiresIn: "1h" })
+                    const token_content = { username: user_match.name, email: user_match.email, user_id: user_match._id }
+                    const token = jwt.sign(token_content, env.jwt.secret_key, { expiresIn: "1h" })
                     res.status(200).json({ success: true, message: "Login successful", data: { token } })
                 } else {
                     res.status(403).json({ success: false, message: "Wrong username or password" })

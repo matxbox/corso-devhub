@@ -104,9 +104,11 @@ app.put("/addUser", async (req, res) => {
 app.get("/listMovies", async (req, res) => {
     try {
         await client.connect()
-        var query = req.query
-        for (const key in query) {
-            query[key] = { $regex: query[key], $options: "i" }
+        const query = {}
+        for (const key in req.query) {
+            if (req.query[key]) {
+                query[key] = { $regex: req.query[key], $options: "i" }
+            }
         }
         const cursor = client.db("sample_mflix").collection("movies").find(query)
         const movies = await cursor.sort({ _id: -1 }).limit(50).toArray()

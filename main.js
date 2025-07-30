@@ -123,9 +123,9 @@ app.get("/listMovies", async (req, res) => {
 
 app.post("/addFilm", async (req, res) => {
     try {
-        const required_info = ["title", "director", "year"]
+        const required_info = ["title", "directors", "year"]
         if (!required_info.every(key => key in req.body)) {
-            res.status(400).json({ success: false, message: "Missing minimum required info [title, director, year] to add film" })
+            res.status(400).json({ success: false, message: "Missing minimum required info [title, directors, year] to add film" })
         }
         await client.connect()
         const result = await client.db("sample_mflix").collection("movies").insertOne(req.body)
